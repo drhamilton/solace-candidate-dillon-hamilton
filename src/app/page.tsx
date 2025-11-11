@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { SpecialtyTag } from "./components/SpecialtyTag";
 
 interface Advocate {
   firstName: string;
@@ -15,9 +16,11 @@ interface Advocate {
 const initialAdvocates: Advocate[] = [];
 const DEBOUNCE_DELAY = 300;
 const ADVOCATE_API_URL = "/api/advocates";
+const NUM_SPECIALTIES_DISPLAYED = 3;
 
 export default function Home() {
   const [advocates, setAdvocates] = useState<Advocate[]>(initialAdvocates);
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -28,15 +31,14 @@ export default function Home() {
     });
   }, []);
 
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const searchTerm = e.target.value;
+  const performSearch = (term: string) => {
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
     }
 
     debounceTimer.current = setTimeout(() => {
-      const url = searchTerm
-        ? `${ADVOCATE_API_URL}?search=${encodeURIComponent(searchTerm)}`
+      const url = term
+        ? `${ADVOCATE_API_URL}?search=${encodeURIComponent(term)}`
         : ADVOCATE_API_URL;
 
       fetch(url).then((response) => {
@@ -45,6 +47,17 @@ export default function Home() {
         });
       });
     }, DEBOUNCE_DELAY);
+  };
+
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    performSearch(value);
+  };
+
+  const handleSpecialtyClick = (specialty: string) => {
+    setSearchTerm(specialty);
+    performSearch(specialty);
   };
 
   return (
@@ -60,6 +73,7 @@ export default function Home() {
             placeholder="Search for advocates by name, city, degree, specialty, or experience"
             type="text"
             onChange={onChange}
+            value={searchTerm}
           />
         </div>
 
@@ -109,14 +123,23 @@ export default function Home() {
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900">
                         <div className="space-y-1">
-                          {advocate.specialties.map((s, index) => (
-                            <div
-                              key={index}
-                              className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded inline-block mr-1 mb-1"
-                            >
-                              {s}
+                          {advocate.specialties
+                            .slice(0, NUM_SPECIALTIES_DISPLAYED)
+                            .map((s, i) => (
+                              <SpecialtyTag
+                                onClick={() => handleSpecialtyClick(s)}
+                                specialty={s}
+                                key={i}
+                              />
+                            ))}
+                          {advocate.specialties.length > 5 && (
+                            <div className="text-xs text-gray-500 mt-1">
+                              +
+                              {advocate.specialties.length -
+                                NUM_SPECIALTIES_DISPLAYED}{" "}
+                              more
                             </div>
-                          ))}
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

@@ -38,6 +38,12 @@ export default function Home() {
         console.error("Error fetching advocates:", error);
         setAdvocates([]);
       });
+
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+    };
   }, []);
 
   const performSearch = (term: string) => {

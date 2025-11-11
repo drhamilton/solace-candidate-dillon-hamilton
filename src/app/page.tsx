@@ -24,11 +24,20 @@ export default function Home() {
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    fetch(ADVOCATE_API_URL).then((response) => {
-      response.json().then((jsonResponse) => {
+    fetch(ADVOCATE_API_URL)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch advocates");
+        }
+        return response.json();
+      })
+      .then((jsonResponse) => {
         setAdvocates(jsonResponse.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching advocates:", error);
+        setAdvocates([]);
       });
-    });
   }, []);
 
   const performSearch = (term: string) => {
@@ -41,11 +50,20 @@ export default function Home() {
         ? `${ADVOCATE_API_URL}?search=${encodeURIComponent(term)}`
         : ADVOCATE_API_URL;
 
-      fetch(url).then((response) => {
-        response.json().then((jsonResponse) => {
+      fetch(url)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Search request failed");
+          }
+          return response.json();
+        })
+        .then((jsonResponse) => {
           setAdvocates(jsonResponse.data);
+        })
+        .catch((error) => {
+          console.error("Error searching advocates:", error);
+          setAdvocates([]);
         });
-      });
     }, DEBOUNCE_DELAY);
   };
 
@@ -132,7 +150,8 @@ export default function Home() {
                                 key={i}
                               />
                             ))}
-                          {advocate.specialties.length > 5 && (
+                          {advocate.specialties.length >
+                            NUM_SPECIALTIES_DISPLAYED && (
                             <div className="text-xs text-gray-500 mt-1">
                               +
                               {advocate.specialties.length -

@@ -130,9 +130,10 @@ export default function Home() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {advocates.map((advocate, index) => {
+                {advocates.map((advocate) => {
+                  const uniqueKey = `${advocate.firstName}-${advocate.lastName}-${advocate.phoneNumber}`;
                   return (
-                    <tr key={index} className="hover:bg-gray-50">
+                    <tr key={uniqueKey} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {advocate.firstName}
                       </td>
@@ -149,11 +150,11 @@ export default function Home() {
                         <div className="space-y-1">
                           {advocate.specialties
                             .slice(0, NUM_SPECIALTIES_DISPLAYED)
-                            .map((s, i) => (
+                            .map((s) => (
                               <SpecialtyTag
                                 onClick={() => handleSpecialtyClick(s)}
                                 specialty={s}
-                                key={i}
+                                key={s}
                               />
                             ))}
                           {advocate.specialties.length >
